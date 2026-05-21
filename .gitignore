@@ -1,36 +1,32 @@
-```php
-# Environment and configuration
+```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.class
+
+# Dependencies
+node_modules/
+venv/
+.venv/
 .env
 .env.local
 .env.*
 
-# Logs
+# Logs and temp files
 *.log
-
-# Temporary files
 *.tmp
 *.swp
 
-# Dependencies
-vendor/
-composer.lock
-
-# IDE specific
+# Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# PHP specific
-*.php~
-phpunit.xml.dist
-coverage/
-
-# Build artifacts
+# Build directories
 dist/
 build/
 target/
