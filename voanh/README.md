@@ -30,28 +30,30 @@ VoAnh est une réécriture complète en PHP/SQLite du projet LiteClaw, conçue p
 
 ```
 voanh/
-├── config.php           # Configuration principale
+├── config.php           # Configuration principale (API keys, modèles)
 ├── db.php               # Gestion de la base SQLite
-├── index.php            # Point d'entrée principal
-├── api.php              # API REST
-├── chat.php             # Interface de chat
-├── admin.php            # Panneau d'administration
+├── index.php            # Interface principale de chat
+├── api.php              # API REST complète
+├── dashboard.php        # Tableau de bord utilisateur
+├── settings.php         # Paramètres du compte
+├── history.php          # Historique des conversations
 ├── login.php            # Connexion utilisateur
 ├── register.php         # Inscription utilisateur
 ├── logout.php           # Déconnexion
-├── mistral.php          # Client API Mistral
+├── mistral.php          # Client API Mistral avec rotation
 ├── agent.php            # Moteur de l'agent IA
-├── tools.php            # Outils système
-├── memory.php           # Gestion de la mémoire
-├── scheduler.php        # Tâches planifiées
-├── heartbeat.php        # Moniteur Heartbeat
-├── subconscious.php     # Innovateur Subconscious
-├── vision.php           # Agent Vision (simulation)
-├── subagent.php         # Gestion des sub-agents
-├── web_utils.php        # Utilitaires web
-├── auth.php             # Authentification
-├── styles.css           # Styles CSS
-└── README.md            # Ce fichier
+├── tools.php            # Outils système sécurisés
+├── memory.php           # Gestion de la mémoire (SOUL, PERSONALITY...)
+├── auth.php             # Authentification et gestion utilisateurs
+├── script.js            # JavaScript pour l'interface
+├── styles.css           # Styles CSS modernes
+├── README.md            # Ce fichier
+├── config/              # Fichiers de mémoire (SOUL, PERSONALITY...)
+├── data/                # Base de données SQLite
+├── logs/                # Journaux d'erreurs
+├── sessions/            # Sessions temporaires
+├── skills/              # Compétences téléchargées
+└── screenshots/         # Captures d'écran
 ```
 
 ## 🚀 Installation
