@@ -1,34 +1,37 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-venv/
-env/
-ENV/
+```php
+# Environment and configuration
 .env
+.env.local
+.env.*
 
+# Logs
+*.log
 
-# Project Specific
-config.json
-liteclaw_memory.db
-*.png
-!assets/*.png
-temp_script.ps1
+# Temporary files
+*.tmp
+*.swp
 
-# Node.js (Bridge)
-whatsapp_bridge/node_modules/
-whatsapp_bridge/.npm
-whatsapp_bridge/.wwebjs_auth/
-whatsapp_bridge/.wwebjs_cache/
-whatsapp_session/
-src/liteclaw/bridge/node_modules/
-src/liteclaw/bridge/.wwebjs_cache/
-src/liteclaw/bridge/.wwebjs_auth/
+# Dependencies
+vendor/
+composer.lock
 
-
-# IDEs
+# IDE specific
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# PHP specific
+*.php~
+phpunit.xml.dist
+coverage/
+
+# Build artifacts
+dist/
+build/
+target/
+```
