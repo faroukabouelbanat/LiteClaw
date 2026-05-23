@@ -1,0 +1,192 @@
+<?php
+/**
+ * LiteClaw - Page d'Inscription
+ */
+
+require_once __DIR__ . '/../config.php';
+require_once CORE_PATH . '/auth.php';
+
+$auth = new Auth();
+$error = '';
+$success = '';
+
+// Si déjà connecté, rediriger vers index
+if ($auth->isAuthenticated()) {
+    header('Location: ../index.php');
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
+    
+    if (empty($username) || empty($email) || empty($password)) {
+        $error = 'Veuillez remplir tous les champs';
+    } elseif ($password !== $confirmPassword) {
+        $error = 'Les mots de passe ne correspondent pas';
+    } else {
+        $result = $auth->register($username, $email, $password);
+        
+        if ($result['success']) {
+            $success = 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.';
+        } else {
+            $error = $result['error'];
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - LiteClaw</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+        }
+        .auth-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .auth-box h1 {
+            text-align: center;
+            color: var(--accent);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 15px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .submit-btn:hover {
+            background: var(--accent-hover);
+        }
+        .error-message {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .success-message {
+            background: rgba(63, 185, 80, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .auth-links {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .auth-links a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .back-link:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <h1>LiteClaw</h1>
+            
+            <?php if ($error): ?>
+            <div class="error-message"><?= htmlspecialchars($error) ?></div>
+            <?php endif; ?>
+            
+            <?php if ($success): ?>
+            <div class="success-message"><?= htmlspecialchars($success) ?></div>
+            <?php endif; ?>
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur</label>
+                    <input type="text" id="username" name="username" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" required minlength="<?= PASSWORD_MIN_LENGTH ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">Confirmer le mot de passe</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">S'inscrire</button>
+            </form>
+            
+            <div class="auth-links">
+                Déjà un compte ? <a href="login.php">Se connecter</a>
+            </div>
+            <a href="../index.php" class="back-link">← Retour à l'accueil</a>
+        </div>
+    </div>
+</body>
+</html>
