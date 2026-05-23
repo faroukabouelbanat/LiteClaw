@@ -1,263 +1,154 @@
 <?php
 /**
  * VoAnh - Configuration Principale
- * Portail PHP/SQLite avec Mistral AI
+ * Clone de Claude AI avec agents autonomes et auto-renforcement
  */
 
 // Empêcher l'exécution directe
-if (!defined('VOANH_ROOT')) {
-    define('VOANH_ROOT', __DIR__);
+if (!defined('VOANH_INIT')) {
+    define('VOANH_INIT', true);
 }
 
-// === CONFIGURATION DE BASE ===
+// Chemins
+define('ROOT_PATH', dirname(__DIR__));
+define('CORE_PATH', ROOT_PATH . '/core');
+define('API_PATH', ROOT_PATH . '/api');
+define('INTERFACE_PATH', ROOT_PATH . '/interface');
+define('DATA_PATH', ROOT_PATH . '/data');
+define('SANDBOX_PATH', ROOT_PATH . '/sandbox');
+define('ASSETS_PATH', ROOT_PATH . '/assets');
 
-// Clés API Mistral par défaut (rotation automatique)
+// Base de données
+define('DB_FILE', DATA_PATH . '/voanh.sqlite');
+define('DB_LOCK_FILE', DATA_PATH . '/voanh.lock');
+
+// API Keys Mistral (3 clés avec rotation)
 define('DEFAULT_MISTRAL_API_KEYS', [
     '5qaRTjaH8Rake',
     'o3rG1zaShytu',
     'vEzQaFruXkF'
 ]);
 
-// Endpoint Mistral AI
-define('MISTRAL_ENDPOINT', 'https://api.mistral.ai/v1/chat/completions');
+// Endpoint API Mistral
+define('MISTRAL_API_ENDPOINT', 'https://api.mistral.ai/v1/chat/completions');
 
-// Timeout pour les requêtes cURL (secondes)
-define('MISTRAL_TIMEOUT', 30);
-
-// === MODÈLES MISTRAL DISPONIBLES ===
-$MODELS = [
-    // Code & Développement
-    'codestral-2508' => [
-        'category' => 'code',
-        'description' => 'Auto-complétion en temps réel, FIM optimisé'
+// Modèles Mistral organisés par catégorie
+define('MISTRAL_MODELS', [
+    'code' => [
+        ['id' => 'codestral-2508', 'name' => 'Code Master Ultimate', 'desc' => 'Auto-complétion temps réel, FIM'],
+        ['id' => 'devstral-2512', 'name' => 'Dev Agent Pro', 'desc' => 'Architecture, déploiement, refactoring'],
+        ['id' => 'devstral-medium-2507', 'name' => 'Dev Agent Medium', 'desc' => 'Débogage quotidien, patterns complexes'],
+        ['id' => 'devstral-small-2507', 'name' => 'Dev Agent Light', 'desc' => 'Micro-tâches, tests unitaires, CI/CD']
     ],
-    'devstral-2512' => [
-        'category' => 'code',
-        'description' => 'Architectures logicielles, DevOps, refactoring lourd'
+    'flagship' => [
+        ['id' => 'mistral-large-2512', 'name' => 'Mistral Brain Ultra', 'desc' => 'Raisonnement logique, contextes massifs'],
+        ['id' => 'mistral-large-2411', 'name' => 'Mistral Brain Legacy', 'desc' => 'Version stable, workflows entreprise']
     ],
-    'devstral-medium-2507' => [
-        'category' => 'code',
-        'description' => 'Débogage quotidien, équilibre performance/prix'
+    'medium' => [
+        ['id' => 'mistral-medium-2508', 'name' => 'Corporate Engine Pro', 'desc' => 'Tâches admin, analyse textuelle'],
+        ['id' => 'mistral-medium-2505', 'name' => 'Corporate Engine Standard', 'desc' => 'RAG, synthèse documents']
     ],
-    'devstral-small-2507' => [
-        'category' => 'code',
-        'description' => 'Tests unitaires, CI/CD, micro-tâches'
+    'small' => [
+        ['id' => 'mistral-small-2603', 'name' => 'Fast Automate Turbo', 'desc' => 'Extraction masse, scraping API'],
+        ['id' => 'mistral-small-2506', 'name' => 'Fast Automate Standard', 'desc' => 'Classification, tagging, clustering']
     ],
-    
-    // Raisonnement & Haute Performance
-    'mistral-large-2512' => [
-        'category' => 'flagship',
-        'description' => 'État de l\'art, raisonnement logique, contexte massif'
+    'agent' => [
+        ['id' => 'magistral-medium-2509', 'name' => 'Agent Router Medium', 'desc' => 'Orchestration multi-agents'],
+        ['id' => 'magistral-small-2509', 'name' => 'Agent Router Small', 'desc' => 'Routage rapide prompts']
     ],
-    'mistral-large-2411' => [
-        'category' => 'flagship',
-        'description' => 'Version stable précédente, workflows entreprise'
+    'creative' => [
+        ['id' => 'labs-mistral-small-creative', 'name' => 'Creative Writer', 'desc' => 'Storytelling, brainstorming']
     ],
-    
-    // Modèles Intermédiaires
-    'mistral-medium-2508' => [
-        'category' => 'medium',
-        'description' => 'Tâches administratives complexes, analyse textuelle'
+    'vision' => [
+        ['id' => 'pixtral-large-2411', 'name' => 'Vision Analyzer Max', 'desc' => 'UI, plans, diagrammes'],
+        ['id' => 'pixtral-12b-2409', 'name' => 'Vision Analyzer Light', 'desc' => 'OCR, détection objets']
     ],
-    'mistral-medium-2505' => [
-        'category' => 'medium',
-        'description' => 'RAG, synthèse de documents taille moyenne'
+    'edge' => [
+        ['id' => 'ministral-14b-2512', 'name' => 'Local Engine Heavy', 'desc' => 'Modèle compact puissant'],
+        ['id' => 'ministral-8b-2512', 'name' => 'Local Engine Medium', 'desc' => 'All-rounder mobile'],
+        ['id' => 'ministral-3b-2512', 'name' => 'Local Engine Micro', 'desc' => 'Ultra-léger, commande vocale']
     ],
-    
-    // Vitesse & Automatisation
-    'mistral-small-2603' => [
-        'category' => 'small',
-        'description' => 'Extraction de données, scraping API, haut débit'
-    ],
-    'mistral-small-2506' => [
-        'category' => 'small',
-        'description' => 'Classification, tagging, clustering, routage'
-    ],
-    
-    // Agents Spécialisés
-    'magistral-medium-2509' => [
-        'category' => 'agent',
-        'description' => 'Orchestration multi-agents, prise de décision'
-    ],
-    'magistral-small-2509' => [
-        'category' => 'agent',
-        'description' => 'Routage rapide dans architecture multi-agents'
-    ],
-    
-    // Créativité
-    'labs-mistral-small-creative' => [
-        'category' => 'creative',
-        'description' => 'Storytelling, scriptwriting, brainstorming'
-    ],
-    
-    // Vision
-    'pixtral-large-2411' => [
-        'category' => 'vision',
-        'description' => 'Analyse d\'images complexes, UI, plans, diagrammes'
-    ],
-    'pixtral-12b-2409' => [
-        'category' => 'vision',
-        'description' => 'OCR rapide, détection d\'objets, sous-titrage'
-    ],
-    
-    // Edge Computing
-    'ministral-14b-2512' => [
-        'category' => 'edge',
-        'description' => 'Modèle compact puissant, local/cloud léger'
-    ],
-    'ministral-8b-2512' => [
-        'category' => 'edge',
-        'description' => 'Applications mobiles, serveur embarqué'
-    ],
-    'ministral-3b-2512' => [
-        'category' => 'edge',
-        'description' => 'Ultra-léger, vitesse absolue, RAM minimale'
-    ],
-    
-    // Audio
-    'voxtral-small-2507' => [
-        'category' => 'audio',
-        'description' => 'Analyse sémantique audio fine, intonations'
-    ],
-    'voxtral-mini-2507' => [
-        'category' => 'audio',
-        'description' => 'Traitement rapide flux audio, commandes'
+    'audio' => [
+        ['id' => 'voxtral-small-2507', 'name' => 'Audio Core Small', 'desc' => 'Analyse sémantique audio'],
+        ['id' => 'voxtral-mini-2507', 'name' => 'Audio Core Mini', 'desc' => 'Traitement flux rapide']
     ]
-];
+]);
 
-// Modèle par défaut
-define('DEFAULT_MODEL', 'mistral-medium-2508');
+// Configuration système
+define('MAX_EXECUTION_TIME', 120);
+define('MEMORY_LIMIT', '256M');
+define('UPLOAD_MAX_SIZE', 50 * 1024 * 1024); // 50MB
+define('SESSION_LIFETIME', 3600 * 24); // 24 heures
+define('RATE_LIMIT_REQUESTS', 100); // requêtes par minute
+define('RATE_LIMIT_WINDOW', 60); // secondes
 
-// === CHEMINS ET DOSSIERS ===
+// Sandbox
+define('SANDBOX_ENABLED', true);
+define('SANDBOX_TIMEOUT', 30);
+define('SANDBOX_MEMORY_LIMIT', '128M');
 
-// Dossier de travail principal
-define('WORK_DIR', VOANH_ROOT . '/data');
+// Logs
+define('LOG_FILE', DATA_PATH . '/voanh.log');
+define('LOG_LEVEL', 3); // 0: none, 1: error, 2: warning, 3: info, 4: debug
 
-// Dossiers spécialisés
-define('CONFIG_DIR', VOANH_ROOT . '/config');
-define('SESSIONS_DIR', WORK_DIR . '/sessions');
-define('SCREENSHOTS_DIR', WORK_DIR . '/screenshots');
-define('SKILLS_DIR', VOANH_ROOT . '/skills');
-define('LOGS_DIR', VOANH_ROOT . '/logs');
-define('DB_FILE', WORK_DIR . '/voanh.db');
+// Sécurité
+define('CSRF_TOKEN_LENGTH', 32);
+define('PASSWORD_MIN_LENGTH', 8);
+define('MAX_LOGIN_ATTEMPTS', 5);
+define('LOCKOUT_TIME', 900); // 15 minutes
 
-// Permissions (respect des limitations Hostinger)
-define('DIR_PERMISSIONS', 0755);
-define('FILE_PERMISSIONS', 0644);
+// Auto-renforcement
+define('AUTO_LEARNING_ENABLED', true);
+define('LEARNING_THRESHOLD', 0.8); // Seuil de confiance pour apprentissage
+define('MEMORY_CONSOLIDATION_INTERVAL', 3600); // 1 heure
 
-// === GESTION DES ERREURS ===
+// Agents
+define('MASTER_AGENT_MODEL', 'mistral-large-2512');
+define('CODE_AGENT_MODEL', 'devstral-2512');
+define('VISION_AGENT_MODEL', 'pixtral-large-2411');
+define('PLANNER_AGENT_MODEL', 'magistral-medium-2509');
+define('CREATIVE_AGENT_MODEL', 'labs-mistral-small-creative');
 
-// Mode débogage (à false en production)
-define('DEBUG_MODE', true);
-
-// Journalisation des erreurs
-ini_set('log_errors', true);
-ini_set('error_log', LOGS_DIR . '/error.log');
-
-if (DEBUG_MODE) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-} else {
-    error_reporting(0);
-    ini_set('display_errors', 0);
+// Création des dossiers si inexistants
+$directories = [DATA_PATH, SANDBOX_PATH, ASSETS_PATH];
+foreach ($directories as $dir) {
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
 }
 
-// === SESSIONS PHP ===
-
-// Démarrer la session si pas déjà fait
+// Initialisation de la session
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.use_strict_mode', 1);
     session_start();
 }
 
-// === FONCTIONS UTILITAIRES ===
-
-/**
- * Vérifie et crée les dossiers nécessaires
- */
-function ensure_directories() {
-    $dirs = [
-        WORK_DIR,
-        CONFIG_DIR,
-        SESSIONS_DIR,
-        SCREENSHOTS_DIR,
-        SKILLS_DIR,
-        LOGS_DIR
-    ];
+// Fonction de logging
+function voanh_log($message, $level = 3) {
+    if ($level > LOG_LEVEL) return;
     
-    foreach ($dirs as $dir) {
-        if (!is_dir($dir)) {
-            mkdir($dir, DIR_PERMISSIONS, true);
-        }
-    }
-    
-    // Créer fichier de log vide si inexistant
-    $log_file = LOGS_DIR . '/error.log';
-    if (!file_exists($log_file)) {
-        touch($log_file);
-        chmod($log_file, FILE_PERMISSIONS);
-    }
-}
-
-/**
- * Nettoie une entrée utilisateur
- */
-function clean_input($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
-    return $data;
-}
-
-/**
- * Génère un token CSRF
- */
-function generate_csrf_token() {
-    if (empty($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    }
-    return $_SESSION['csrf_token'];
-}
-
-/**
- * Vérifie un token CSRF
- */
-function verify_csrf_token($token) {
-    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
-}
-
-/**
- * Redirection sécurisée
- */
-function redirect($url) {
-    header('Location: ' . $url);
-    exit;
-}
-
-/**
- * Réponse JSON standardisée
- */
-function json_response($data, $status = 200) {
-    http_response_code($status);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    exit;
-}
-
-/**
- * Log une erreur
- */
-function log_error($message, $context = []) {
     $timestamp = date('Y-m-d H:i:s');
-    $log_entry = "[$timestamp] $message";
+    $levels = [0 => 'NONE', 1 => 'ERROR', 2 => 'WARNING', 3 => 'INFO', 4 => 'DEBUG'];
+    $log_entry = "[$timestamp] [" . $levels[$level] . "] $message\n";
     
-    if (!empty($context)) {
-        $log_entry .= ' | Context: ' . json_encode($context);
-    }
-    
-    $log_entry .= PHP_EOL;
-    
-    file_put_contents(LOGS_DIR . '/error.log', $log_entry, FILE_APPEND | LOCK_EX);
+    file_put_contents(LOG_FILE, $log_entry, FILE_APPEND | LOCK_EX);
 }
 
-// Initialisation
-ensure_directories();
+// Gestion des erreurs
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    voanh_log("Error [$errno]: $errstr in $errfile on line $errline", 1);
+    if (error_reporting() & $errno) {
+        throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+    }
+});
+
+set_exception_handler(function($exception) {
+    voanh_log("Uncaught exception: " . $exception->getMessage(), 1);
+    if (!headers_sent()) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Une erreur interne est survenue']);
+    }
+});
+
+voanh_log("VoAnh initialized", 3);
