@@ -11,20 +11,33 @@ vendor/
 .env.local
 *.env.*
 
-# Editor/IDE files
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+dist/
+build/
+*.so
+*.dll
+*.exe
+
+# Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS files
+# System files
 .DS_Store
 Thumbs.db
 
-# Build artifacts
-dist/
-build/
-*.o
-*.obj
-*.out
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Cache
+.mypy_cache/
+.pytest_cache/
 ```
