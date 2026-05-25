@@ -1,18 +1,15 @@
 <?php
 /**
  * LiteClaw Configuration - PHP Version
- * Gère la configuration et les paramètres de l'application
+ * Gère tous les paramètres et configurations de l'application
  */
 
-class LiteClawConfig {
-    private static ?LiteClawConfig $instance = null;
-    
+class Settings {
     // Work Directory - où LiteClaw stocke les fichiers, screenshots, configs
     public string $WORK_DIR;
     
-    // LLM Configuration
     public string $LLM_PROVIDER = "openai";
-    public string $LLM_API_KEY = "";
+    public string $LLM_API_KEY = "";  // Vide pendant l'onboarding
     public string $LLM_MODEL = "gpt-4o";
     public ?string $LLM_BASE_URL = null;
     public ?string $LLM_API_VERSION = null;
@@ -38,95 +35,73 @@ class LiteClawConfig {
     public string $WHATSAPP_SESSION_ID = "whatsapp";
     
     // Break Time
-    public float $BREAK_UNTIL = 0;
+    public float $BREAK_UNTIL = 0.0;
     
     // Chrome Path
     public string $CHROME_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
     public int $CHROME_DEBUG_PORT = 9222;
     
+    private static ?Settings $instance = null;
+    
     private function __construct() {
-        $this->WORK_DIR = $this->getDefaultWorkDir();
-        $this->loadConfig();
+        $this->WORK_DIR = self::getDefaultWorkDir();
+        $this->loadFromEnv();
+        $this->loadFromJson();
         $this->ensureWorkDirs();
     }
     
-    /**
-     * Get default work directory based on OS
-     */
-    private function getDefaultWorkDir(): string {
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    public static function getInstance(): Settings {
+        if (self::$instance === null) {
+            self::$instance = new Settings();
+        }
+        return self::$instance;
+    }
+    
+    private static function getDefaultWorkDir(): string {
+        $system = php_uname('s');
+        if ($system === 'Windows NT') {
             return "C:\\liteclaw";
         } else {
-            return getenv('HOME') . "/liteclaw";
+            return getenv('HOME') . '/liteclaw';
         }
     }
     
-    /**
-     * Load configuration from JSON file or environment variables
-     */
-    private function loadConfig(): void {
+    private function loadFromEnv(): void {
+        // Charger depuis les variables d'environnement
+        if (getenv('LLM_PROVIDER')) $this->LLM_PROVIDER = getenv('LLM_PROVIDER');
+        if (getenv('LLM_API_KEY')) $this->LLM_API_KEY = getenv('LLM_API_KEY');
+        if (getenv('LLM_MODEL')) $this->LLM_MODEL = getenv('LLM_MODEL');
+        if (getenv('LLM_BASE_URL')) $this->LLM_BASE_URL = getenv('LLM_BASE_URL');
+        if (getenv('WHATSAPP_ALLOWED_NUMBERS')) {
+            $nums = getenv('WHATSAPP_ALLOWED_NUMBERS');
+            $this->WHATSAPP_ALLOWED_NUMBERS = array_filter(array_map('trim', explode(',', $nums)));
+        }
+        if (getenv('GIPHY_API_KEY')) $this->GIPHY_API_KEY = getenv('GIPHY_API_KEY');
+        if (getenv('AWS_REGION_NAME')) $this->AWS_REGION_NAME = getenv('AWS_REGION_NAME');
+    }
+    
+    private function loadFromJson(): void {
         $configFile = "config.json";
-        $configData = [];
+        $data = [];
         
-        // Try local directory first
+        // Essayer le dossier local d'abord
         if (file_exists($configFile)) {
-            $configData = json_decode(file_get_contents($configFile), true) ?? [];
-        } elseif (file_exists($this->WORK_DIR . "/" . $configFile)) {
-            $configData = json_decode(file_get_contents($this->WORK_DIR . "/" . $configFile), true) ?? [];
+            $content = file_get_contents($configFile);
+            $data = json_decode($content, true) ?? [];
+        } elseif (file_exists($this->WORK_DIR . '/' . $configFile)) {
+            $content = file_get_contents($this->WORK_DIR . '/' . $configFile);
+            $data = json_decode($content, true) ?? [];
         }
         
-        // Apply config data
-        foreach ($configData as $key => $value) {
-            if (property_exists($this, $key)) {
-                $this->$key = $value;
+        if (!empty($data)) {
+            foreach ($data as $key => $value) {
+                if (property_exists($this, $key)) {
+                    $this->$key = $value;
+                }
             }
         }
-        
-        // Environment variables override
-        if (getenv('LITECLAW_WORK_DIR')) $this->WORK_DIR = getenv('LITECLAW_WORK_DIR');
-        if (getenv('LITECLAW_LLM_PROVIDER')) $this->LLM_PROVIDER = getenv('LITECLAW_LLM_PROVIDER');
-        if (getenv('LITECLAW_LLM_API_KEY')) $this->LLM_API_KEY = getenv('LITECLAW_LLM_API_KEY');
-        if (getenv('LITECLAW_LLM_MODEL')) $this->LLM_MODEL = getenv('LITECLAW_LLM_MODEL');
     }
     
-    /**
-     * Get screenshots directory path
-     */
-    public function getScreenshotsDir(): string {
-        return $this->WORK_DIR . "/screenshots";
-    }
-    
-    /**
-     * Get configs directory path
-     */
-    public function getConfigsDir(): string {
-        return $this->WORK_DIR . "/configs";
-    }
-    
-    /**
-     * Get notes directory path
-     */
-    public function getNotesDir(): string {
-        return $this->WORK_DIR . "/notes";
-    }
-    
-    /**
-     * Get exports directory path
-     */
-    public function getExportsDir(): string {
-        return $this->WORK_DIR . "/exports";
-    }
-    
-    /**
-     * Get agent instructions path
-     */
-    public function getAgentInstructionsPath(): string {
-        return $this->getConfigsDir() . "/AGENT.md";
-    }
-    
-    /**
-     * Create work directory and subdirectories if they don't exist
-     */
     public function ensureWorkDirs(): void {
         $dirs = [
             $this->WORK_DIR,
@@ -134,33 +109,39 @@ class LiteClawConfig {
             $this->getConfigsDir(),
             $this->getNotesDir(),
             $this->getExportsDir(),
-            $this->WORK_DIR . "/sessions"
+            $this->WORK_DIR . '/sessions'
         ];
-        
         foreach ($dirs as $dir) {
-            if (!file_exists($dir)) {
+            if (!is_dir($dir)) {
                 mkdir($dir, 0755, true);
             }
         }
     }
     
-    /**
-     * Get Chrome user data directory
-     */
     public function getChromeUserDataDir(): string {
-        return $this->WORK_DIR . "/sessions/browser";
+        return $this->WORK_DIR . '/sessions/browser';
     }
     
-    /**
-     * Singleton instance getter
-     */
-    public static function getInstance(): LiteClawConfig {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
+    public function getScreenshotsDir(): string {
+        return $this->WORK_DIR . '/screenshots';
+    }
+    
+    public function getConfigsDir(): string {
+        return $this->WORK_DIR . '/configs';
+    }
+    
+    public function getNotesDir(): string {
+        return $this->WORK_DIR . '/notes';
+    }
+    
+    public function getExportsDir(): string {
+        return $this->WORK_DIR . '/exports';
+    }
+    
+    public function getAgentInstructionsPath(): string {
+        return $this->getConfigsDir() . '/AGENT.md';
     }
 }
 
-// Initialize settings
-$settings = LiteClawConfig::getInstance();
+// Instance globale
+$settings = Settings::getInstance();
